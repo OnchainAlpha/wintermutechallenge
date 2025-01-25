@@ -1,0 +1,23 @@
+# ERC-4626 Vault Vulnerability Analysis
+
+## a) Vulnerability Description
+
+The vulnerability in the old OpenZeppelin ERC-4626 implementation is known as the "donation attack" or "inflation attack". Here's how it works:
+
+1. The vault holds underlying tokens and mints shares to depositors
+2. An attacker can manipulate the exchange rate between shares and underlying tokens by directly transferring tokens to the vault (donation)
+3. When a legitimate user attempts to deposit, the attacker can frontrun their transaction:
+   - Transfer a large amount of tokens directly to the vault
+   - This artificially inflates the exchange rate
+   - User's deposit transaction executes with the manipulated rate, receiving fewer shares than expected
+   - Attacker withdraws their "donated" tokens
+
+Payoff calculation example:
+- Initial state: 100 tokens = 100 shares (1:1 ratio)
+- Attacker donates 900 tokens
+- New ratio: 1000 tokens = 100 shares (10:1 ratio)
+- User deposits 100 tokens expecting ~10 shares but receives only 1 share
+- Attacker withdraws their 900 tokens
+- User is left with 1 share worth only ~10 tokens instead of 100
+
+## b) Historical Check Code
